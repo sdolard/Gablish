@@ -157,14 +157,29 @@ ApplicationWindow {
         anchors.top: rlVolume.bottom
 
         Slider {
-            id: sliderVPos
+            id: sliderPos
             Layout.fillWidth: true
-
+            maximumValue: playMusic.duration
+            property bool sync: false
+            onValueChanged: {
+                if (!sync) {
+                    playMusic.seek(value)
+                }
+            }
+        }
+        Connections {
+            target: playMusic
+            onPositionChanged: {
+                sliderPos.sync = true
+                sliderPos.value = playMusic.position
+                sliderPos.sync = false
+            }
         }
         Text {
             id: textPos
             text: Math.floor(playMusic.duration / 1000)
         }
     }
+
 
 }
