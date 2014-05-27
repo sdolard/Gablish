@@ -2,5 +2,15 @@
     <qresource prefix="/">
         <file>main.qml</file>
         <file>utils.js</file>
+        <file>res/pause.png</file>
+        <file>res/play.png</file>
+        <file>res/file.png</file>
+        <file>res/folder-close.png</file>
+        <file>res/microphone.png</file>
+        <file>res/volume-down.png</file>
+        <file>res/volume-off.png</file>
+        <file>res/volume-up.png</file>
+        <file>res/login.png</file>
+        <file>qml/components/GabButton.qml</file>
     </qresource>
 </RCC>

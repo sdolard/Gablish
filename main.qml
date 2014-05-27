@@ -4,21 +4,24 @@ import QtMultimedia 5.0
 import QtQuick.Layouts 1.0
 import QtQuick.Dialogs 1.1
 import Qt.labs.settings 1.0
+import QtQuick.Controls.Styles 1.1
 
-import "utils.js" as Utils
+import "qml/components/"
+
+//import "utils.js" as Utils
 
 ApplicationWindow {
     id: applicationWindow1
     visible: true
     width: 640
     height: 480
-    title: qsTr("Test")
+    title: qsTr("Gablish")
     statusBar: StatusBar {
         id: sb
         RowLayout {
             Label {
                 id: labSb
-                text: settingsMP.source
+                text: player.title
             }
         }
     }
@@ -31,106 +34,89 @@ ApplicationWindow {
     }
 
     Component.onDestruction: {
-        settingsMP.volume = playMusic.volume
-        settingsMP.source = playMusic.source
+        settingsMP.volume = player.volume
+        settingsMP.source = player.source
     }
     Component.onCompleted: {
-        console.log(settingsMP.source)
-        playMusic.source = Qt.resolvedUrl(settingsMP.source)
-        playMusic.play()
+        player.source = Qt.resolvedUrl(settingsMP.source)
+        player.play()
     }
+
+    Audio {
+        id: player
+        volume: settingsMP.volume
+        readonly property string title: !!metaData.author && !!metaData.title
+                                        ? qsTr("%1 - %2").arg(metaData.author).arg(metaData.title)
+                                        : metaData.author || metaData.title || source
+        onError: console.log(errorString)
+        onPlaying: console.log('Playing ', player.source)
+        onStopped: console.log('Stopped')
+        onPlaybackStateChanged: {
+            switch(playbackState) {
+            case 0: break;
+            case MediaPlayer.PlayingState:
+                buttonPP.imageSource = "qrc:/res/pause.png"
+                break;
+            case MediaPlayer.PausedState:
+            case MediaPlayer.StoppedState:
+                buttonPP.imageSource = "qrc:/res/play.png"
+                break;
+            default:
+                console.error('Unmanaged playbackState: ', playbackState)
+            }
+        }
+    }
+
+    FileDialog {
+        id: fileDialog
+        title: "Choose a file..."
+        nameFilters: [qsTr("MP3 files (*.mp3)"), qsTr("All files (*.*)")]
+        onAccepted: {
+            player.source = fileDialog.fileUrl
+            console.log(fileDialog.fileUrl)
+            player.play();
+        }
+    }
+
 
     Row {
         id: rowButtons
         spacing: 2
         height: 80
 
-        Button {
-            width: 80
-            height: 80
-            text: "Quit"
+        GabButton {
+            imageSource: "qrc:/res/login.png"
             onClicked: Qt.quit();
         }
 
-        //Audio {
-        MediaPlayer {
-            id: playMusic
-            //autoLoad: true
-            volume: settingsMP.volume
-            //source: settingsMP.source
-            onError: {
-                if (error == 2 /*QMediaPlayer::FormatError*/) {
-                    console.log('The format of a media resource isn\'t (fully) supported. Playback may still be possible, but without an audio or video component.')
-                }
-                labSb.text = errorString
-            }
-            onPlaying: console.log('Playing ', playMusic.source)
-            onStopped: console.log('Stopped')
-            onPlaybackStateChanged: {
-                switch(playbackState) {
-                case 0: break;
-                case MediaPlayer.PlayingState:
-                    console.log('State:', 'PlayingState');
-                    console.log('duration: ', playMusic.duration)
-                    console.log(playMusic.metaData.title)
-                    buttonPP.text = "Pause"
-                    break;
-                case MediaPlayer.PausedState:
-                    console.log('State:', 'PausedState');
-                    buttonPP.text = "Play"
-                    break;
-                case MediaPlayer.StoppedState:
-                    console.log('State:', 'StoppedState');
-                    buttonPP.text = "Play"
-                    break;
-                default:
-                    console.error('Unmanaged playbackState: ', playbackState)
-                }
-            }
-        }
 
-
-        Button {
+        GabButton {
             id: buttonPP
-            width: 80
-            height: 80
-            text: "Play"
+            imageSource: "qrc:/res/play.png"
             onClicked: {
-                switch(playMusic.playbackState) {
+                switch(player.playbackState) {
                 case 0: // Never loaded ?
-                     playMusic.play()
-                     break;
+                    player.play()
+                    break;
                 case MediaPlayer.PlayingState:
-                    playMusic.pause()
+                    player.pause()
                     break;
                 case MediaPlayer.PausedState:
-                    playMusic.play()
+                    player.play()
                     break;
                 case MediaPlayer.StoppedState:
-                    playMusic.seek(0)
-                    playMusic.play()
+                    player.seek(0)
+                    player.play()
                     break;
                 default:
-                    console.error('Unmanaged playbackState: ', playMusic.playbackState)
+                    console.error('Unmanaged playbackState: ', player.playbackState)
                 }
             }
         }
 
-        FileDialog {
-            id: fileDialog
-            title: "Choose a file..."
-            onAccepted: {
-                playMusic.source = fileDialog.fileUrl
-                console.log(fileDialog.fileUrl)
-                labSb.text = fileDialog.fileUrl
-                playMusic.play();
-            }
-        }
-
-        Button {
+        GabButton {
             width: 120
-            height: 80
-            text: "Open a file"
+            imageSource: "qrc:/res/file.png"
             onClicked: fileDialog.visible = true
         }
     }
@@ -144,11 +130,11 @@ ApplicationWindow {
             id: sliderVolume
             Layout.fillWidth: true
             value: settingsMP.volume
-            onValueChanged: playMusic.volume = value
+            onValueChanged: player.volume = value
         }
         Text {
             id: textVolume
-            text: Math.floor(playMusic.volume * 100) + '%'
+            text: Math.floor(player.volume * 100) + '%'
         }
     }
     RowLayout {
@@ -159,27 +145,32 @@ ApplicationWindow {
         Slider {
             id: sliderPos
             Layout.fillWidth: true
-            maximumValue: playMusic.duration
+            maximumValue: player.duration
             property bool sync: false
             onValueChanged: {
                 if (!sync) {
-                    playMusic.seek(value)
+                    player.seek(value)
                 }
             }
         }
         Connections {
-            target: playMusic
+            target: player
             onPositionChanged: {
                 sliderPos.sync = true
-                sliderPos.value = playMusic.position
+                sliderPos.value = player.position
                 sliderPos.sync = false
             }
         }
         Text {
             id: textPos
-            text: Math.floor(playMusic.duration / 1000)
+            readonly property int posM: Math.floor(player.position / 60000)
+            readonly property int posS: Math.round((player.position % 60000) / 1000)
+            readonly property int durM: Math.floor(player.duration / 60000)
+            readonly property int durS: Math.round((player.duration % 60000) / 1000)
+            readonly property string pos: Qt.formatTime(new Date(0, 0, 0, 0, posM, posS), qsTr("mm:ss"))
+            readonly property string dur: Qt.formatTime(new Date(0, 0, 0, 0, durM, durS), qsTr("mm:ss"))
+
+            text: qsTr("%1/%2").arg(pos).arg(dur)
         }
     }
-
-
 }
