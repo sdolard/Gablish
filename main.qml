@@ -6,7 +6,7 @@ import QtQuick.Dialogs 1.1
 import Qt.labs.settings 1.0
 import QtQuick.Controls.Styles 1.1
 
-import "qml/components/"
+import "qrc:/qml/components/"
 
 //import "utils.js" as Utils
 
@@ -80,8 +80,10 @@ ApplicationWindow {
 
 
     Row {
+        y: 10
+        x: 10
         id: rowButtons
-        spacing: 2
+        spacing: 10
         height: 80
 
         GabButton {
@@ -125,6 +127,7 @@ ApplicationWindow {
         id: rlVolume
         spacing: 2
         anchors.top: rowButtons.bottom
+        anchors.topMargin: 50
 
         Slider {
             id: sliderVolume

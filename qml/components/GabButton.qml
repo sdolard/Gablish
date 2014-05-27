@@ -4,9 +4,25 @@ import QtQuick.Controls.Styles 1.1
 
 Button {
     property url imageSource: ""
+    antialiasing: true
 
     style: ButtonStyle {
         background: Rectangle {
+            SequentialAnimation on rotation {
+                loops: Animation.Infinite
+                RotationAnimation {
+                    from: -15
+                    to: 15
+                    duration: 2000
+                    easing.type: Easing.InOutQuad
+                }
+                RotationAnimation {
+                    from: 15
+                    to: -15
+                    duration: 2000
+                    easing.type: Easing.InOutQuad
+                }
+            }
             implicitWidth: 80
             implicitHeight: 80
             border.width: control.activeFocus ? 2 : 1
