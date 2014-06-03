@@ -4,6 +4,7 @@ import QtQuick.Controls.Styles 1.1
 
 Button {
     property url imageSource: ""
+    property string pressedGradientColor: "#aaa"
 
     style: ButtonStyle {
         background: Rectangle {
@@ -29,7 +30,7 @@ Button {
             radius: 4
             gradient: Gradient {
                 GradientStop { position: 0 ; color: control.pressed ? "#ccc" : "#eee" }
-                GradientStop { position: 1 ; color: control.pressed ? "#aaa" : "#ccc" }
+                GradientStop { position: 1 ; color: control.pressed ? pressedGradientColor : "#ccc" }
             }
             Image {
                 fillMode: Image.PreserveAspectFit

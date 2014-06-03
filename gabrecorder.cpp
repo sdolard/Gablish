@@ -1,8 +1,17 @@
-#include "gabrecorder.h"
+#include <QStandardPaths>
 
+#include "gabrecorder.h"
 
 GabRecorder::GabRecorder()
 {
+    qDebug() << "supportedAudioCodecs: " << m_recorder.supportedAudioCodecs().join(',');
+
+#ifdef Q_OS_MAC
+    m_audioSettings.setCodec("audio/pcm");
+    setOutput("rec1.wav"); //TODO: Should be id base !
+#endif
+
+    m_recorder.setAudioSettings(m_audioSettings);
 }
 
 GabRecorder::~GabRecorder()
@@ -11,17 +20,62 @@ GabRecorder::~GabRecorder()
 
 void GabRecorder::record()
 {
-    qDebug() << "Called the C++ method";
+    m_recorder.record();
 }
 
-QString GabRecorder::tmp() const
+void GabRecorder::stop()
 {
-    return m_tmp;
+    m_recorder.stop();
 }
-void GabRecorder::setTmp(const QString &t)
+
+QString GabRecorder::codec() const
 {
-    if (t == m_tmp)
+    return m_audioSettings.codec();
+}
+
+void GabRecorder::setCodec(const QString &codec)
+{
+    if (codec == m_audioSettings.codec())
         return;
-    m_tmp = t;
-    emit tmpChanged(m_tmp);
+    if (m_recorder.supportedAudioCodecs().indexOf(codec) == -1)
+    {
+        qDebug() << "Unsupported audio codec: " << codec;
+        return;
+    }
+    m_audioSettings.setCodec(codec);
+    m_recorder.setAudioSettings(m_audioSettings);
+
+    emit codecChanged(codec);
+}
+
+QUrl GabRecorder::output() const
+{
+    return m_output;
+}
+
+bool GabRecorder::setOutput(const QString &filename)
+{
+    QString p = QDir(QStandardPaths::writableLocation(QStandardPaths::MusicLocation)).filePath(filename);
+
+    if (p == m_output)
+        return false;
+    m_output = p;
+    QUrl url(QUrl::fromLocalFile(p));
+    m_recorder.setOutputLocation(url);
+    return true;
+}
+
+QString GabRecorder::filename() const
+{
+    return QFile(m_output).fileName();
+}
+
+void GabRecorder::setFilename(const QString & filename)
+{
+    QFile file(m_output);
+    if (filename == file.fileName())
+        return;
+    if (setOutput(filename)) {
+        emit filenameChanged(filename);
+    }
 }

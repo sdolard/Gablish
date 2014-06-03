@@ -42,6 +42,8 @@ ApplicationWindow {
     Component.onCompleted: {
         player.source = Qt.resolvedUrl(settingsMP.source)
         player.play()
+
+        rec1.filename = "rec2.wav"
     }
 
     Audio {
@@ -80,7 +82,6 @@ ApplicationWindow {
         }
     }
 
-
     Row {
         y: 10
         x: 10
@@ -92,7 +93,6 @@ ApplicationWindow {
             imageSource: "qrc:/res/login.png"
             onClicked: Qt.quit();
         }
-
 
         GabButton {
             id: buttonPP
@@ -125,15 +125,19 @@ ApplicationWindow {
 
         GabButton {
             imageSource: "qrc:/res/microphone.png"
-            onClicked: {
-                rec.record()
-                rec.tmp = "foo"
+            pressedGradientColor: "#FF0000"
+            onPressedChanged: {
+                console.log("onPressedChanged: ", pressed)
+                if(pressed)
+                    rec1.record()
+                else
+                    rec1.stop()
             }
         }
 
         GabRecorder {
-            id: "rec"
-            onTmpChanged: console.error('onTmpChanged: ', tmp)
+            id: "rec1"
+            onFilenameChanged: console.error('onFilenameChanged: ', filename)
         }
     }
 
