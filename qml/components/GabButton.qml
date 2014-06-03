@@ -4,7 +4,6 @@ import QtQuick.Controls.Styles 1.1
 
 Button {
     property url imageSource: ""
-    antialiasing: true
 
     style: ButtonStyle {
         background: Rectangle {

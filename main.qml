@@ -8,6 +8,8 @@ import QtQuick.Controls.Styles 1.1
 
 import "qrc:/qml/components/"
 
+import gablish.gabrecorder 1.0
+
 //import "utils.js" as Utils
 
 ApplicationWindow {
@@ -117,9 +119,21 @@ ApplicationWindow {
         }
 
         GabButton {
-            width: 120
             imageSource: "qrc:/res/file.png"
             onClicked: fileDialog.visible = true
+        }
+
+        GabButton {
+            imageSource: "qrc:/res/microphone.png"
+            onClicked: {
+                rec.record()
+                rec.tmp = "foo"
+            }
+        }
+
+        GabRecorder {
+            id: "rec"
+            onTmpChanged: console.error('onTmpChanged: ', tmp)
         }
     }
 
